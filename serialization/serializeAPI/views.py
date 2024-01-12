@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .models import MenuItem
+from django.core.paginator import Paginator,EmptyPage
 @api_view(['GET','POST'])
 def menu_items(request):
     if request.method == 'GET':
@@ -16,6 +17,8 @@ def menu_items(request):
         to_price = request.query_params.get('to_price')
         search = request.query_params.get('search')
         odering = request.query_params.get('odering')
+        perpage = request.query_params.get('perpage',default=2)
+        page = request.query_params.get('page',default=1)
         if category_name:
             items = items.filter(category__title=category_name)
         if to_price:
@@ -25,7 +28,12 @@ def menu_items(request):
         if odering:
             odering_fields =    odering.split(",")
             
-            items = items.order_by(*odering_fields)  # odering will be done  in ascending order for descending order just add - in api call no need to add any code    
+            items = items.order_by(*odering_fields)  # odering will be done  in ascending order for descending order just add - in api call no need to add any code  
+        paginator = Paginator(items,per_page=perpage)
+        try:
+            items = paginator.page(number=page)
+        except EmptyPage:
+            items = []           #if page number does not exist then it will generate emptypage error and items will be empty
         serialized_items = MenuItemSerializer(items,many=True)   #the many=true signify you are converting list to json data
         return Response(serialized_items.data)
     if request.method == 'POST':
