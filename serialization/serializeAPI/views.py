@@ -58,3 +58,10 @@ def secret(request):
     return Response({"message":"This is a protected route"})        
 
 
+@api_view()
+@permission_classes([IsAuthenticated])
+def manager_view(request):
+    if request.user.groups.filter(name='Manager').exist():
+        return Response({"message":"Only by Manager"})
+    else:
+        return Response({"message":"only manager can access"},403)
