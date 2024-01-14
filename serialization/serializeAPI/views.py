@@ -49,4 +49,12 @@ def single_item(request,id):
     return Response(serialized_item.data)
 
 
-        
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+@api_view()
+@permission_classes([IsAuthenticated])
+def secret(request):
+    return Response({"message":"This is a protected route"})        
+
+
